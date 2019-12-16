@@ -105,6 +105,8 @@ public class Utility {
 	public static final String DAY_PRICE_MIN_URL = "%sapi.finance.%s/akmin?scode=%s&type=%s";
 	public static final String TICK_PRICE_URL = "%smarket.%s/%s?date=%s&symbol=%s";
 	public static final String LIVE_DATA_URL = "%shq.%s/rn=%s&list=%s";
+
+	public static final String ALL_STOCK_BASICS_FILE = P_TYPE.get("http") + DOMAINS.get("oss") + "/tsdata/%sall%s.csv";
 	public static final String ALL_CAL_FILE = String.format("%s%s/tsdata/calAll.csv", P_TYPE.get("http"),
 			DOMAINS.get("oss"));
 
