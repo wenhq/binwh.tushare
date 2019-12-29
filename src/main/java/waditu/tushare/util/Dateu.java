@@ -16,7 +16,7 @@ import waditu.tushare.common.HTTParty;
 import waditu.tushare.common.Utility;
 import waditu.tushare.entity.TradeDateData;
 
-public class dateu {
+public class Dateu {
 
 	/**
 	 * 
