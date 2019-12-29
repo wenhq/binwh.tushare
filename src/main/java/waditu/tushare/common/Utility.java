@@ -4,10 +4,12 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Random;
 
+import waditu.tushare.exception.TypeError;
+
 /**
  * Created by Raymond on 26/11/2016.
  */
-public class Utility {
+public class Utility implements IConstants {
 
 	private Utility() {
 	}
@@ -112,6 +114,18 @@ public class Utility {
 
 	public static boolean _isBlank(String s) {
 		return (s == null || s.trim().length() == 0);
+	}
+
+	public static boolean checkInput(int year, int quarter) throws TypeError {
+		boolean result = false;
+		if (year < 1989) {
+			throw new TypeError(IConstants.Msg.DATE_CHK_MSG.toString());
+		} else if (quarter < 1 || quarter > 4) {
+			throw new TypeError(IConstants.Msg.DATE_CHK_Q_MSG.toString());
+		} else {
+			result = true;
+		}
+		return result;
 	}
 
 	/**
