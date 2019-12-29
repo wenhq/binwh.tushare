@@ -1,7 +1,5 @@
 package waditu.tushare.entity;
 
-import java.util.Date;
-
 public class StockBasicsData {
 	public String code; //代码
 	public String name; //名称
