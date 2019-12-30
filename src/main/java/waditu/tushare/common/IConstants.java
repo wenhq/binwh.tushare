@@ -29,15 +29,13 @@ public interface IConstants {
 	}
 
 	public static enum PAGES {
-		sina("sina.com.cn"),
-
-		fd("index.phtml"), dl("downxls.php"), jv("json_v2.php"), cpt("newFLJK.php"), ids("newSinaHy.php"),
-		lnews("rollnews_ch_out_interface.php"), ntinfo("vCB_BulletinGather.php"), hs300b("000300cons.xls"),
-		hs300w("000300closeweight.xls"), sz50b("000016cons.xls"), dp("all_fpya.php"), dp163("fpyg.html"),
-		emxsg("JS.aspx"), fh163("jjcgph.php"), newstock("vRPD_NewStockIssue.php"), zz500b("000905cons.xls"),
-		zz500wt("000905closeweight.xls"), t_ticks("vMS_tradedetail.php"), dw("downLoad.html"), qmd("queryMargin.do"),
-		szsefc("ShowReport.szse"), ssecq("commonQuery.do"), sinadd("cn_bill_download.php"), ids_sw("SwHy.php"),
-		idx("index.php"), index("index.html");
+		sina("sina.com.cn"), fd("index.phtml"), dl("downxls.php"), jv("json_v2.php"), cpt("newFLJK.php"),
+		ids("newSinaHy.php"), lnews("rollnews_ch_out_interface.php"), ntinfo("vCB_BulletinGather.php"),
+		hs300b("000300cons.xls"), hs300w("000300closeweight.xls"), sz50b("000016cons.xls"), dp("all_fpya.php"),
+		dp163("fpyg.html"), emxsg("JS.aspx"), fh163("jjcgph.php"), newstock("vRPD_NewStockIssue.php"),
+		zz500b("000905cons.xls"), zz500wt("000905closeweight.xls"), t_ticks("vMS_tradedetail.php"), dw("downLoad.html"),
+		qmd("queryMargin.do"), szsefc("ShowReport.szse"), ssecq("commonQuery.do"), sinadd("cn_bill_download.php"),
+		ids_sw("SwHy.php"), idx("index.php"), index("index.html");
 
 		public final String value;
 
@@ -48,7 +46,8 @@ public interface IConstants {
 
 	public static enum Url {
 		REPORT_URL(
-				"%s%s/q/go.php/vFinanceAnalyze/kind/mainindex/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s");
+				"%s%s/q/go.php/vFinanceAnalyze/kind/mainindex/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s"),
+		PROFIT_URL("%s%s/q/go.php/vFinanceAnalyze/kind/profit/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s");
 		public final String value;
 
 		private Url(String value) {

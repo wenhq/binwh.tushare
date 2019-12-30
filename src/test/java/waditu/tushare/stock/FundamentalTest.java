@@ -16,7 +16,13 @@ public class FundamentalTest {
 	}
 
 	@Test
+	@Ignore
 	public void testGetReportData() {
 		assertTrue(Fundamental.getReportData(2019, 3, 1, 1, 100).size() > 10);
+	}
+	
+	@Test
+	public void testGetProfitData() {
+		assertTrue(Fundamental.getProfitData(2019, 3, 1, 1, 100).size() > 10);
 	}
 }
