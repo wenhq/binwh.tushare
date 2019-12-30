@@ -14,6 +14,7 @@ import org.seimicrawler.xpath.JXNode;
 import waditu.tushare.common.HTTParty;
 import waditu.tushare.common.IConstants;
 import waditu.tushare.common.Utility;
+import waditu.tushare.entity.OperationData;
 import waditu.tushare.entity.ProfitData;
 import waditu.tushare.entity.ReportData;
 import waditu.tushare.entity.StockBasicsData;
@@ -221,6 +222,75 @@ public class Fundamental {
 					profitData.bips = items.get(8).toString().equals("--") ? Double.NaN
 							: Double.parseDouble(items.get(8).toString());
 					result.add(profitData);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+	}
+
+	/**
+	 * 获取营运能力数据，不支持递归抓取
+	 * 
+	 * @param year    int 年度 e.g:2014
+	 * @param quarter int 季度 :1、2、3、4，只能输入这4个季度
+	 * @return
+	 */
+	public static List<OperationData> getOperationData(int year, int quarter) {
+		List<OperationData> result = null;
+		if (Utility.checkInput(year, quarter)) {
+			result = getOperationData(year, quarter, 1, 3, 100);
+		}
+		return result;
+	}
+
+	/**
+	 * 获取营运能力数据，不支持递归抓取
+	 * 
+	 * @param year       int 年度 e.g:2014
+	 * @param quarter    int 季度 :1、2、3、4，只能输入这4个季度
+	 *                   说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @param pageNo     int 第几页
+	 * @param retryCount int 重试次数
+	 * @param pause      抓取间隔时间（毫秒）
+	 * @return 返回数据列表
+	 * @throws IOError
+	 */
+	public static List<OperationData> getOperationData(int year, int quarter, int pageNo, int retryCount, int pause) {
+		List<OperationData> result = new ArrayList<OperationData>();
+		for (int i = 0; i < retryCount; i++) {
+			try {
+				Thread.sleep(pause);
+				String url = String.format(IConstants.Url.OPERATION_URL.value, IConstants.P_TYPE.http.value,
+						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
+						IConstants.PAGE_NUM[1]);
+				String text = HTTParty.get(url, "GBK");
+
+				JXDocument doc = JXDocument.create(text);
+				List<JXNode> nodes = doc.selN("//table[@class=\"list_table\"]//tr");
+				nodes.remove(0); // 去除标题列
+				for (JXNode node : nodes) {
+//					System.out.println(node.toString());
+					OperationData operationData = new OperationData();
+					List<JXNode> items = node.sel("//td//text()");
+					operationData.code = items.get(0).toString();
+					operationData.name = items.get(1).toString();
+					operationData.arturnover = items.get(2).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(2).toString());
+					operationData.arturndays = items.get(3).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(3).toString());
+					operationData.inventory_turnover = items.get(4).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(4).toString());
+					operationData.inventory_days = items.get(5).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(5).toString());
+					operationData.currentasset_turnover = items.get(6).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(6).toString());
+					operationData.currentasset_days = items.get(7).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(7).toString());
+					result.add(operationData);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
