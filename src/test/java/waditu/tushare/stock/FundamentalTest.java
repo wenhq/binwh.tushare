@@ -20,15 +20,33 @@ public class FundamentalTest {
 	public void testGetReportData() {
 		assertTrue(Fundamental.getReportData(2019, 3, 1, 1, 100).size() > 10);
 	}
-	
+
 	@Test
 	@Ignore
 	public void testGetProfitData() {
 		assertTrue(Fundamental.getProfitData(2019, 3, 1, 1, 100).size() > 10);
 	}
-	
+
 	@Test
+	@Ignore
 	public void testGetOperationData() {
 		assertTrue(Fundamental.getOperationData(2019, 3, 1, 1, 100).size() > 10);
+	}
+
+	@Test
+	@Ignore
+	public void testGetGrowthData() {
+		assertTrue(Fundamental.getGrowthData(2019, 3, 1, 1, 100).size() > 10);
+	}
+
+	@Test
+	@Ignore
+	public void testGetDebtpayingData() {
+		assertTrue(Fundamental.getDebtpayingData(2019, 3, 1, 1, 100).size() > 10);
+	}
+
+	@Test
+	public void testGetCashFlowData() {
+		assertTrue(Fundamental.getCashFlowData(2019, 3, 1, 1, 100).size() > 10);
 	}
 }

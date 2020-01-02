@@ -14,6 +14,9 @@ import org.seimicrawler.xpath.JXNode;
 import waditu.tushare.common.HTTParty;
 import waditu.tushare.common.IConstants;
 import waditu.tushare.common.Utility;
+import waditu.tushare.entity.CashFlowData;
+import waditu.tushare.entity.DebtpayingData;
+import waditu.tushare.entity.GrowthData;
 import waditu.tushare.entity.OperationData;
 import waditu.tushare.entity.ProfitData;
 import waditu.tushare.entity.ReportData;
@@ -291,6 +294,211 @@ public class Fundamental {
 					operationData.currentasset_days = items.get(7).toString().equals("--") ? Double.NaN
 							: Double.parseDouble(items.get(7).toString());
 					result.add(operationData);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+	}
+
+	/**
+	 * 获取成长能力数据，不支持递归抓取
+	 * 
+	 * @param year    int 年度 e.g:2014
+	 * @param quarter int 季度 :1、2、3、4，只能输入这4个季度
+	 * @return
+	 */
+	public static List<GrowthData> getGrowthData(int year, int quarter) {
+		List<GrowthData> result = null;
+		if (Utility.checkInput(year, quarter)) {
+			result = getGrowthData(year, quarter, 1, 3, 100);
+		}
+		return result;
+	}
+
+	/**
+	 * 获取成长能力数据，不支持递归抓取
+	 * 
+	 * @param year       int 年度 e.g:2014
+	 * @param quarter    int 季度 :1、2、3、4，只能输入这4个季度
+	 *                   说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @param pageNo     int 第几页
+	 * @param retryCount int 重试次数
+	 * @param pause      抓取间隔时间（毫秒）
+	 * @return 返回数据列表
+	 * @throws IOError
+	 */
+	public static List<GrowthData> getGrowthData(int year, int quarter, int pageNo, int retryCount, int pause) {
+		List<GrowthData> result = new ArrayList<GrowthData>();
+		for (int i = 0; i < retryCount; i++) {
+			try {
+				Thread.sleep(pause);
+				String url = String.format(IConstants.Url.GROWTH_URL.value, IConstants.P_TYPE.http.value,
+						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
+						IConstants.PAGE_NUM[1]);
+				String text = HTTParty.get(url, "GBK");
+
+				JXDocument doc = JXDocument.create(text);
+				List<JXNode> nodes = doc.selN("//table[@class=\"list_table\"]//tr");
+				nodes.remove(0); // 去除标题列
+				for (JXNode node : nodes) {
+//					System.out.println(node.toString());
+					GrowthData growData = new GrowthData();
+					List<JXNode> items = node.sel("//td//text()");
+					growData.code = items.get(0).toString();
+					growData.name = items.get(1).toString();
+					growData.mbrg = items.get(2).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(2).toString());
+					growData.nprg = items.get(3).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(3).toString());
+					growData.nav = items.get(4).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(4).toString());
+					growData.targ = items.get(5).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(5).toString());
+					growData.epsg = items.get(6).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(6).toString());
+					growData.seg = items.get(7).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(7).toString());
+					result.add(growData);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+	}
+
+	/**
+	 * 获取偿债能力数据，不支持递归抓取
+	 * 
+	 * @param year    int 年度 e.g:2014
+	 * @param quarter int 季度 :1、2、3、4，只能输入这4个季度 说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @return
+	 */
+	public static List<DebtpayingData> getDebtpayingData(int year, int quarter) {
+		List<DebtpayingData> result = null;
+		if (Utility.checkInput(year, quarter)) {
+			result = getDebtpayingData(year, quarter, 1, 3, 100);
+		}
+		return result;
+	}
+
+	/**
+	 * 获取偿债能力数据，不支持递归抓取
+	 * 
+	 * @param year       int 年度 e.g:2014
+	 * @param quarter    int 季度 :1、2、3、4，只能输入这4个季度
+	 *                   说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @param pageNo     int 第几页
+	 * @param retryCount int 重试次数
+	 * @param pause      抓取间隔时间（毫秒）
+	 * @return 返回数据列表
+	 * @throws IOError
+	 */
+	public static List<DebtpayingData> getDebtpayingData(int year, int quarter, int pageNo, int retryCount, int pause) {
+		List<DebtpayingData> result = new ArrayList<DebtpayingData>();
+		for (int i = 0; i < retryCount; i++) {
+			try {
+				Thread.sleep(pause);
+				String url = String.format(IConstants.Url.DEBTPAYING_URL.value, IConstants.P_TYPE.http.value,
+						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
+						IConstants.PAGE_NUM[1]);
+				String text = HTTParty.get(url, "GBK");
+
+				JXDocument doc = JXDocument.create(text);
+				List<JXNode> nodes = doc.selN("//table[@class=\"list_table\"]//tr");
+				nodes.remove(0); // 去除标题列
+				for (JXNode node : nodes) {
+//					System.out.println(node.toString());
+					DebtpayingData debtpayingData = new DebtpayingData();
+					List<JXNode> items = node.sel("//td//text()");
+					debtpayingData.code = items.get(0).toString();
+					debtpayingData.name = items.get(1).toString();
+					debtpayingData.currentRatio = items.get(2).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(2).toString());
+					debtpayingData.quickRatio = items.get(3).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(3).toString());
+					debtpayingData.cashRatio = items.get(4).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(4).toString());
+					debtpayingData.icRatio = items.get(5).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(5).toString());
+					debtpayingData.sheqRatio = items.get(6).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(6).toString());
+					debtpayingData.adRatio = items.get(7).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(7).toString());
+					result.add(debtpayingData);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+	}
+
+	/**
+	 * 获取现金流量数据，不支持递归抓取
+	 * 
+	 * @param year    int 年度 e.g:2014
+	 * @param quarter int 季度 :1、2、3、4，只能输入这4个季度 说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @return
+	 */
+	public static List<CashFlowData> getCashFlowData(int year, int quarter) {
+		List<CashFlowData> result = null;
+		if (Utility.checkInput(year, quarter)) {
+			result = getCashFlowData(year, quarter, 1, 3, 100);
+		}
+		return result;
+	}
+
+	/**
+	 * 获取现金流量数据，不支持递归抓取
+	 * 
+	 * @param year       int 年度 e.g:2014
+	 * @param quarter    int 季度 :1、2、3、4，只能输入这4个季度
+	 *                   说明：由于是从网站获取的数据，需要一页页抓取，速度取决于您当前网络速度
+	 * @param pageNo     int 第几页
+	 * @param retryCount int 重试次数
+	 * @param pause      抓取间隔时间（毫秒）
+	 * @return 返回数据列表
+	 * @throws IOError
+	 */
+	public static List<CashFlowData> getCashFlowData(int year, int quarter, int pageNo, int retryCount, int pause) {
+		List<CashFlowData> result = new ArrayList<CashFlowData>();
+		for (int i = 0; i < retryCount; i++) {
+			try {
+				Thread.sleep(pause);
+				String url = String.format(IConstants.Url.CASHFLOW_URL.value, IConstants.P_TYPE.http.value,
+						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
+						IConstants.PAGE_NUM[1]);
+				String text = HTTParty.get(url, "GBK");
+
+				JXDocument doc = JXDocument.create(text);
+				List<JXNode> nodes = doc.selN("//table[@class=\"list_table\"]//tr");
+				nodes.remove(0); // 去除标题列
+				for (JXNode node : nodes) {
+//					System.out.println(node.toString());
+					CashFlowData cashFlowData = new CashFlowData();
+					List<JXNode> items = node.sel("//td//text()");
+					cashFlowData.code = items.get(0).toString();
+					cashFlowData.name = items.get(1).toString();
+					cashFlowData.cfSales = items.get(2).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(2).toString());
+					cashFlowData.rateOfReturn = items.get(3).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(3).toString());
+					cashFlowData.cfNm = items.get(4).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(4).toString());
+					cashFlowData.cfLiabilities = items.get(5).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(5).toString());
+					cashFlowData.cashFlowRatio = items.get(6).toString().equals("--") ? Double.NaN
+							: Double.parseDouble(items.get(6).toString());
+					result.add(cashFlowData);
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
