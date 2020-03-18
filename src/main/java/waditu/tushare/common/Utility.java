@@ -29,6 +29,7 @@ public class Utility implements IConstants {
 	};
 
 	@SuppressWarnings("serial")
+	@Deprecated
 //    public final static String[] INDEX_LABELS = {"sh", "sz", "hs300", "sz50", "cyb", "zxb", "zx300", "zh500"};
 	public final static HashMap<String, String> INDEX_LIST = new HashMap<String, String>() {
 		{
@@ -134,6 +135,7 @@ public class Utility implements IConstants {
 	 * @param code 股指代码
 	 * @return 格式处理后的股指代码
 	 */
+	@Deprecated
 	public static String _codeToSymbol(String code) {
 		if (_isBlank(code))
 			return "";

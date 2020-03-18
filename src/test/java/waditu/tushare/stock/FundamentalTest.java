@@ -9,7 +9,6 @@ import org.junit.Test;
 public class FundamentalTest {
 
 	@Test
-	@Ignore
 	public void testGetStockBasics() {
 		assertEquals(Fundamental.getStockBasics("2016-08-08"), null);
 		assertTrue(Fundamental.getStockBasics("2019-12-13").size() > 1000);
@@ -46,6 +45,7 @@ public class FundamentalTest {
 	}
 
 	@Test
+	@Ignore
 	public void testGetCashFlowData() {
 		assertTrue(Fundamental.getCashFlowData(2019, 3, 1, 1, 100).size() > 10);
 	}
