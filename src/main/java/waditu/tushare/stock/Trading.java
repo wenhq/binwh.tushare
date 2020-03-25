@@ -1,28 +1,48 @@
 package waditu.tushare.stock;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import waditu.tushare.common.HTTParty;
-import waditu.tushare.common.Utility;
-import waditu.tushare.entity.QuoteData;
-import waditu.tushare.entity.TickData;
-import waditu.tushare.entity.TradeData;
+import static java.util.Comparator.comparing;
+import static waditu.tushare.common.Utility.DAY_PRICE_MIN_URL;
+import static waditu.tushare.common.Utility.DAY_PRICE_URL;
+import static waditu.tushare.common.Utility.DOMAINS;
+import static waditu.tushare.common.Utility.K_LABELS;
+import static waditu.tushare.common.Utility.K_MIN_LABELS;
+import static waditu.tushare.common.Utility.K_TYPE;
+import static waditu.tushare.common.Utility.LIVE_DATA_URL;
+import static waditu.tushare.common.Utility.PAGES;
+import static waditu.tushare.common.Utility.P_TYPE;
+import static waditu.tushare.common.Utility.QueryDateFormat;
+import static waditu.tushare.common.Utility.TICK_PRICE_URL;
+import static waditu.tushare.common.Utility._codeToSymbol;
+import static waditu.tushare.common.Utility._isBlank;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static java.util.Comparator.comparing;
-import static waditu.tushare.common.Utility.*;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
+
+import waditu.tushare.common.HTTParty;
+import waditu.tushare.common.Utility;
+import waditu.tushare.entity.QuoteData;
+import waditu.tushare.entity.SinaDDData;
+import waditu.tushare.entity.TickData;
+import waditu.tushare.entity.TradeData;
+import waditu.tushare.exception.IOError;
+import waditu.tushare.exception.TypeError;
 
 /**
  * Created by Raymond on 26/11/2016.
@@ -31,6 +51,8 @@ public class Trading {
 
 	/**
 	 * 获取个股历史交易记录
+	 * 迁移自{@code def get_hist_data(code=None, start=None, end=None, ktype='D', 
+	 * retry_count=3, pause=0.001)}方法。
 	 * 
 	 * @param code       股票代码 e.g. 600848
 	 * @param start      开始日期 format：YYYY-MM-DD 为空时取到API所提供的最早日期数据
@@ -45,7 +67,69 @@ public class Trading {
 			int pause) {
 		String symbolCode = Cons.codeToSymbol(code);
 		String url;
-		return null;
+
+		if (Arrays.asList(Cons.K_LABELS).contains(ktype.toUpperCase())) {
+			url = String.format(Cons.URL.DAY_PRICE_URL.value, Cons.P_TYPE.http.value, Cons.DOMAINS.ifeng.value,
+					Cons.K_TYPE.valueOf(ktype.toUpperCase()).value, symbolCode);
+		} else if (Arrays.asList(Cons.K_MIN_LABELS).contains(ktype.toUpperCase())) {
+			url = String.format(Cons.URL.DAY_PRICE_MIN_URL.value, Cons.P_TYPE.http.value, Cons.DOMAINS.ifeng.value,
+					symbolCode, ktype);
+		} else {
+			throw new TypeError("ktype: " + ktype + " is invalid.");
+		}
+
+		List<TradeData> result = new ArrayList<TradeData>();
+		for (int count = 0; count < retryCount; count++) {
+			try {
+				String respContent = HTTParty.get(url);
+
+				JSONArray recordList = JSON.parseObject(respContent).getJSONArray("record");
+				for (int i = 0; i < recordList.size(); i++) {
+					JSONArray itemList = recordList.getJSONArray(i);
+					TradeData item = new TradeData();
+					item.date = (itemList.getDate(0));
+					item.open = (itemList.getDouble(1));
+					item.high = (itemList.getDouble(2));
+					item.close = (itemList.getDouble(3));
+					item.low = (itemList.getDouble(4));
+					item.volume = (itemList.getDouble(5));
+					item.price_change = (itemList.getDouble(6));
+					item.p_change = (itemList.getDouble(7));
+					item.ma5 = (itemList.getDouble(8));
+					item.ma10 = (itemList.getDouble(9));
+					item.ma20 = (itemList.getDouble(10));
+					item.v_ma5 = (itemList.getDouble(11));
+					item.v_ma10 = (itemList.getDouble(12));
+					item.v_ma20 = (itemList.getDouble(13));
+					if (itemList.size() > 14) {
+						item.turnover = (itemList.getDouble(14));
+					}
+					result.add(item);
+				}
+				// 将列表倒叙排列
+				result = result.stream().sorted(comparing(TradeData::getDate).reversed()).collect(Collectors.toList());
+				SimpleDateFormat QueryDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+				// 按时间过滤
+				if (start != null) {
+					long startlong = QueryDateFormat.parse(start).getTime();
+					result = result.stream().filter(s -> s.date.getTime() >= startlong).collect(Collectors.toList());
+				}
+				if (end != null) {
+					long endlong = QueryDateFormat.parse(end).getTime();
+					result = result.stream().filter(s -> s.date.getTime() <= endlong).collect(Collectors.toList());
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.value);
 	}
 
 	@Deprecated
@@ -59,6 +143,7 @@ public class Trading {
 	 * @param code  股票代码
 	 * @param ktype 数据类型，D=日k线 W=周 M=月 5=5分钟 15=15分钟 30=30分钟 60=60分钟，默认为D
 	 * @return
+	 * @deprecated 使用getHistData代替
 	 */
 	@Deprecated
 	public static List<TradeData> getTradeList(String code, String ktype) {
@@ -111,6 +196,15 @@ public class Trading {
 
 	}
 
+	/**
+	 * @deprecated 使用getHistData代替
+	 * @param code
+	 * @param ktype
+	 * @param startDate
+	 * @param endDate
+	 * @return
+	 */
+	@Deprecated
 	public static List<TradeData> getTradeList(String code, String ktype, Date startDate, Date endDate) {
 		List<TradeData> list = getTradeList(code, ktype);
 		if (list.size() > 0) {
@@ -124,10 +218,62 @@ public class Trading {
 
 	/**
 	 * 获取分笔数据
+	 * 迁移自{@code def get_tick_data(code=None, date=None, retry_count=3, pause=0.001,
+                  src='sn')}方法。
+	 * 
+	 * @param code        string 股票代码 e.g. 600848
+	 * @param date        string 日期 format: YYYY-MM-DD
+	 * @param retry_count int, 默认 3 如遇网络等问题重复执行的次数
+	 * @param pause       int, 默认 0 重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
+	 * @param src         数据源选择，可输入sn(新浪)、tt(腾讯)、nt(网易)，默认sn
+	 * @return
+	 */
+	public static List<TickData> getTickData(String code, String date, int retryCount, int pause, String src) {
+		List<TickData> result = new ArrayList<TickData>();
+		if (!Arrays.asList(Cons.TICK_SRCS).contains(src.toLowerCase())) {
+			throw new TypeError(Cons.Msg.TICK_SRC_ERROR.value);
+		}
+		if (src.toLowerCase().equals("sn") || src.toLowerCase().equals("nt")) {
+			throw new IOError("服务已下线");
+		}
+		String symbol = Cons.codeToSymbol(code);
+		String symbol_dgt = Cons.codeToSymbolDgt(code);
+		String datestr = date.replace("-", "");
+		HashMap<String, String> url = new HashMap<String, String>();
+		url.put(Cons.TICK_SRCS[0], String.format(Cons.URL.TICK_PRICE_URL.value, Cons.P_TYPE.http.value,
+				Cons.DOMAINS.sf.value, Cons.PAGES.dl.value, date, symbol));
+		url.put(Cons.TICK_SRCS[1], String.format(Cons.URL.TICK_PRICE_URL_TT.value, Cons.P_TYPE.http.value,
+				Cons.DOMAINS.tt.value, Cons.PAGES.idx.value, symbol, datestr));
+		url.put(Cons.TICK_SRCS[2], String.format(Cons.URL.TICK_PRICE_URL_NT.value, Cons.P_TYPE.http.value,
+				Cons.DOMAINS.netease.value, date.substring(0, 4), datestr, symbol_dgt));
+		for (int count = 0; count < retryCount; count++) {
+			try {
+				if (src.equalsIgnoreCase(Cons.TICK_SRCS[1])) {
+					throw new IOError("尚未实现");
+				} else {
+					// 服务已下线
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.value);
+	}
+
+	/**
+	 * 获取分笔数据
 	 * 
 	 * @param code 股票编码
 	 * @param date 日期
 	 * @return 返回 tick data list
+	 * @deprecated 重写getHistData方法
 	 */
 	@Deprecated
 	public static List<TickData> getTickData(String code, Date date) {
@@ -169,6 +315,72 @@ public class Trading {
 			return null;
 		}
 
+	}
+
+	/**
+	 * 获取sina大单数据，本质上需要获取成交明细，可以成交量和成交额来判断大单。
+	 * 迁移自{@code def get_sina_dd(code=None, date=None, vol=400, retry_count=3, pause=0.001)}方法。
+	 * 
+	 * @param code       股票代码 e.g. 600848
+	 * @param date       日期 format：YYYY-MM-DD
+	 * @param vol        成交量（手）大于等于判断大单
+	 * @param retryCount 如遇网络等问题重复执行的次数
+	 * @param pause      重复请求数据过程中暂停的秒数，防止请求间隔时间太短出现的问题
+	 * 
+	 */
+	public static List<SinaDDData> getSinaDD(String code, String date, int vol, int retryCount, int pause) {
+		// TODO 删除SinaDDData， 使用TickData
+
+		String symbol = Cons.codeToSymbol(code);
+		vol = vol * 100;
+		String url = String.format(Cons.URL.SINA_DD.value, Cons.P_TYPE.http.value, Cons.DOMAINS.vsf.value,
+				Cons.PAGES.sinadd.value, symbol, vol, date);
+
+		List<SinaDDData> result = new ArrayList<>();
+		for (int count = 0; count < retryCount; count++) {
+			try {
+				String content = HTTParty.get(url, "GBK");
+
+				JSONArray list = JSONArray.parseArray(content);
+
+				for (int i = 0; i < list.size(); i++) {
+					JSONObject obj = list.getJSONObject(i);
+					SinaDDData dd = new SinaDDData();
+					dd.code = obj.getString("symbol").replaceAll("sh", "").replaceAll("sz", "");
+					dd.name = obj.getString("name");
+					dd.tickTime = Utility.DateTimeFormat.parse(date + " " + obj.getString("ticktime"));
+					dd.price = obj.getDouble("price");
+					dd.volume = obj.getDouble("volume");
+					dd.amount = dd.price * dd.volume * 100;
+					dd.prevPrice = obj.getDouble("prev_price");
+					switch (obj.getString("kind")) {
+					case "U":
+						dd.kind = "买盘";
+						break;
+					case "D":
+						dd.kind = "卖盘";
+						break;
+					case "E":
+						dd.kind = "中性盘";
+						break;
+					default:
+						dd.kind = "中性盘";
+						break;
+					}
+					result.add(dd);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				continue;
+			}
+			return result;
+		}
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.value);
 	}
 
 	@Deprecated
