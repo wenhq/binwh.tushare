@@ -4,21 +4,27 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Random;
 
-import waditu.tushare.exception.TypeError;
-
 /**
  * Created by Raymond on 26/11/2016.
  */
-public class Utility implements IConstants {
+public class Utility {
 
 	private Utility() {
 	}
 
+	@Deprecated
 	public static final SimpleDateFormat QueryDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+	
 
+	public static final SimpleDateFormat DateTimeFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
+	@Deprecated
 	public final static String[] K_LABELS = { "D", "W", "M" };
+
+	@Deprecated
 	public final static String[] K_MIN_LABELS = { "5", "15", "30", "60" };
 
+	@Deprecated
 	@SuppressWarnings("serial")
 	public final static HashMap<String, String> K_TYPE = new HashMap<String, String>() {
 		{
@@ -45,15 +51,19 @@ public class Utility implements IConstants {
 	};
 
 	@SuppressWarnings("serial")
+	@Deprecated
 	public final static HashMap<String, String> P_TYPE = new HashMap<String, String>() {
 		{
 			put("http", "http://");
 			put("ftp", "ftp://");
 		}
 	};
+
+	@Deprecated
 	public final static int[] PAGE_NUM = { 38, 60, 80, 100 };
 
 	@SuppressWarnings("serial")
+	@Deprecated
 	public final static HashMap<String, String> DOMAINS = new HashMap<String, String>() {
 		{
 			put("sina", "sina.com.cn");
@@ -75,6 +85,7 @@ public class Utility implements IConstants {
 	};
 
 	@SuppressWarnings("serial")
+	@Deprecated
 	public final static HashMap<String, String> PAGES = new HashMap<String, String>() {
 		{
 			put("fd", "index.phtml");
@@ -104,29 +115,23 @@ public class Utility implements IConstants {
 		}
 	};
 
+	@Deprecated
 	public static final String DAY_PRICE_URL = "%sapi.finance.%s/%s/?code=%s&type=last";
+	@Deprecated
 	public static final String DAY_PRICE_MIN_URL = "%sapi.finance.%s/akmin?scode=%s&type=%s";
+	@Deprecated
 	public static final String TICK_PRICE_URL = "%smarket.%s/%s?date=%s&symbol=%s";
+	@Deprecated
 	public static final String LIVE_DATA_URL = "%shq.%s/rn=%s&list=%s";
-
+	@Deprecated
 	public static final String ALL_STOCK_BASICS_FILE = P_TYPE.get("http") + DOMAINS.get("oss") + "/tsdata/%sall%s.csv";
+	@Deprecated
 	public static final String ALL_CAL_FILE = String.format("%s%s/tsdata/calAll.csv", P_TYPE.get("http"),
 			DOMAINS.get("oss"));
 
+	@Deprecated
 	public static boolean _isBlank(String s) {
 		return (s == null || s.trim().length() == 0);
-	}
-
-	public static boolean checkInput(int year, int quarter) throws TypeError {
-		boolean result = false;
-		if (year < 1989) {
-			throw new TypeError(IConstants.Msg.DATE_CHK_MSG.toString());
-		} else if (quarter < 1 || quarter > 4) {
-			throw new TypeError(IConstants.Msg.DATE_CHK_Q_MSG.toString());
-		} else {
-			result = true;
-		}
-		return result;
 	}
 
 	/**
@@ -134,6 +139,9 @@ public class Utility implements IConstants {
 	 * 
 	 * @param code 股指代码
 	 * @return 格式处理后的股指代码
+	 */
+	/**
+	 * @Deprecated replace by {@link waditu.tushare.stock.Cons#codeToSymbol}
 	 */
 	@Deprecated
 	public static String _codeToSymbol(String code) {
@@ -151,6 +159,7 @@ public class Utility implements IConstants {
 				: String.format("sz%s", code.trim());
 	}
 
+	@Deprecated
 	public static int generateRandom(int min, int max) {
 		Random random = new Random();
 
