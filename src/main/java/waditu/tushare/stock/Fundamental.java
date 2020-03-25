@@ -12,8 +12,6 @@ import org.seimicrawler.xpath.JXDocument;
 import org.seimicrawler.xpath.JXNode;
 
 import waditu.tushare.common.HTTParty;
-import waditu.tushare.common.IConstants;
-import waditu.tushare.common.Utility;
 import waditu.tushare.entity.CashFlowData;
 import waditu.tushare.entity.DebtpayingData;
 import waditu.tushare.entity.GrowthData;
@@ -38,7 +36,7 @@ public class Fundamental {
 			return null;
 		}
 		String datepre = date.equals("") ? "" : date.substring(0, 6) + "/";
-		String url = String.format(Utility.ALL_STOCK_BASICS_FILE, datepre, date);
+		String url = String.format(Cons.URL.ALL_STOCK_BASICS_FILE.value, datepre, date);
 		String content = HTTParty.get(url, "GBK");
 //		System.out.println(content);
 		if (content.equals("") || content.equals(null)) {
@@ -100,7 +98,7 @@ public class Fundamental {
 	 */
 	public static List<ReportData> getReportData(int year, int quarter) throws TypeError {
 		List<ReportData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getReportData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -123,10 +121,9 @@ public class Fundamental {
 		List<ReportData> result = new ArrayList<ReportData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.REPORT_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.REPORT_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 //				text = text.replace("--", "");
 
@@ -157,11 +154,16 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 
 	/**
@@ -173,7 +175,7 @@ public class Fundamental {
 	 */
 	public static List<ProfitData> getProfitData(int year, int quarter) {
 		List<ProfitData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getProfitData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -195,10 +197,9 @@ public class Fundamental {
 		List<ProfitData> result = new ArrayList<ProfitData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.PROFIT_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.PROFIT_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 
 				JXDocument doc = JXDocument.create(text);
@@ -228,11 +229,16 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 
 	/**
@@ -244,7 +250,7 @@ public class Fundamental {
 	 */
 	public static List<OperationData> getOperationData(int year, int quarter) {
 		List<OperationData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getOperationData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -266,10 +272,9 @@ public class Fundamental {
 		List<OperationData> result = new ArrayList<OperationData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.OPERATION_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.OPERATION_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 
 				JXDocument doc = JXDocument.create(text);
@@ -297,11 +302,16 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 
 	/**
@@ -313,7 +323,7 @@ public class Fundamental {
 	 */
 	public static List<GrowthData> getGrowthData(int year, int quarter) {
 		List<GrowthData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getGrowthData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -335,10 +345,9 @@ public class Fundamental {
 		List<GrowthData> result = new ArrayList<GrowthData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.GROWTH_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.GROWTH_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 
 				JXDocument doc = JXDocument.create(text);
@@ -366,11 +375,16 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 
 	/**
@@ -382,7 +396,7 @@ public class Fundamental {
 	 */
 	public static List<DebtpayingData> getDebtpayingData(int year, int quarter) {
 		List<DebtpayingData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getDebtpayingData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -404,10 +418,9 @@ public class Fundamental {
 		List<DebtpayingData> result = new ArrayList<DebtpayingData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.DEBTPAYING_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.DEBTPAYING_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 
 				JXDocument doc = JXDocument.create(text);
@@ -435,11 +448,16 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 
 	/**
@@ -451,7 +469,7 @@ public class Fundamental {
 	 */
 	public static List<CashFlowData> getCashFlowData(int year, int quarter) {
 		List<CashFlowData> result = null;
-		if (Utility.checkInput(year, quarter)) {
+		if (Cons.checkInput(year, quarter)) {
 			result = getCashFlowData(year, quarter, 1, 3, 100);
 		}
 		return result;
@@ -473,10 +491,9 @@ public class Fundamental {
 		List<CashFlowData> result = new ArrayList<CashFlowData>();
 		for (int i = 0; i < retryCount; i++) {
 			try {
-				Thread.sleep(pause);
-				String url = String.format(IConstants.Url.CASHFLOW_URL.value, IConstants.P_TYPE.http.value,
-						IConstants.DOMAINS.vsf.value, IConstants.PAGES.fd.value, year, quarter, pageNo,
-						IConstants.PAGE_NUM[1]);
+				String url = String.format(Cons.URL.CASHFLOW_URL.value, Cons.P_TYPE.http.value,
+						Cons.DOMAINS.vsf.value, Cons.PAGES.fd.value, year, quarter, pageNo,
+						Cons.PAGE_NUM[1]);
 				String text = HTTParty.get(url, "GBK");
 
 				JXDocument doc = JXDocument.create(text);
@@ -502,10 +519,15 @@ public class Fundamental {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+				try {
+					Thread.sleep(pause);
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
 				continue;
 			}
 			return result;
 		}
-		throw new IOError(IConstants.Msg.NETWORK_URL_ERROR_MSG.toString());
+		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.toString());
 	}
 }
