@@ -6,12 +6,14 @@ import java.util.Date;
  * Created by Raymond on 24/12/2016.
  */
 public final class TradeData {
+	public String code;
     public Date date;
     public Double open;
     public Double high;
     public Double close;
     public Double low;
     public Double volume;
+    public Double amount;
     public Double price_change;
     public Double p_change;
     public Double ma5;

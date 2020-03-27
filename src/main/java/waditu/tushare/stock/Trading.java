@@ -15,7 +15,11 @@ import static waditu.tushare.common.Utility.TICK_PRICE_URL;
 import static waditu.tushare.common.Utility._codeToSymbol;
 import static waditu.tushare.common.Utility._isBlank;
 
+import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -87,6 +91,7 @@ public class Trading {
 				for (int i = 0; i < recordList.size(); i++) {
 					JSONArray itemList = recordList.getJSONArray(i);
 					TradeData item = new TradeData();
+					item.code = code;
 					item.date = (itemList.getDate(0));
 					item.open = (itemList.getDouble(1));
 					item.high = (itemList.getDouble(2));
@@ -219,7 +224,7 @@ public class Trading {
 	/**
 	 * 获取分笔数据
 	 * 迁移自{@code def get_tick_data(code=None, date=None, retry_count=3, pause=0.001,
-                  src='sn')}方法。
+	              src='sn')}方法。
 	 * 
 	 * @param code        string 股票代码 e.g. 600848
 	 * @param date        string 日期 format: YYYY-MM-DD
@@ -383,6 +388,84 @@ public class Trading {
 		throw new IOError(Cons.Msg.NETWORK_URL_ERROR_MSG.value);
 	}
 
+	public static void getTodayTicks() {
+		// TODO
+		/**
+		 * 接口
+		 * http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/CN_Transactions.getAllPageTime?date=2020-03-25&symbol=sh600118
+		 * 页面
+		 * https://vip.stock.finance.sina.com.cn/quotes_service/view/vMS_tradedetail.php?symbol=sh600118&date=2020-03-25&page=3
+		 */
+	}
+
+	@SuppressWarnings("unused")
+	private static void todayTicks() {
+		// TODO
+	}
+
+	/**
+	 * 一次性获取最近一个日交易日所有股票的交易数据 迁移自{@code def get_today_all()}方法。
+	 * 
+	 * @return
+	 */
+	public static List<TradeData> getTodayAll(int pause, boolean isTest) {
+		List<TradeData> result = new ArrayList<>();
+		for (int i = 1;; i++) {
+			int count = parsingDaypriceJson("hs_a", i, result);
+			if (count == 0) {
+				break;
+			}
+			try {
+				Thread.sleep(pause);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			if (isTest) {
+				break;
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * 处理当日行情分页数据，格式为json
+	 * 迁移自{@code def _parsing_dayprice_json(types=None, page=1)}方法。
+	 * 
+	 * @param types
+	 * @param page  页码
+	 * @return
+	 */
+	private static int parsingDaypriceJson(String types, int page, List<TradeData> result) {
+		if (result == null) {
+			result = new ArrayList<>();
+		}
+
+		String url = String.format(Cons.URL.SINA_DAY_PRICE_URL.value, Cons.P_TYPE.http.value, Cons.DOMAINS.vsf.value,
+				Cons.PAGES.jv.value, types, page);
+		// http://vip.stock.finance.sina.com.cn/quotes_service/api/json_v2.php/Market_Center.getHQNodeData?num=80&sort=code&asc=0&node=hs_a&symbol=&_s_r_a=page&page=1
+		String text = HTTParty.get(url, "GBK");
+		JSONArray list = JSONArray.parseArray(text);
+		if (list == null) {
+			return 0;
+		}
+		int count = list.size();
+		for (int i = 0; i < list.size(); i++) {
+			JSONObject obj = list.getJSONObject(i);
+			TradeData data = new TradeData();
+			data.code = obj.getString("code");
+			data.open = obj.getDouble("open");
+			data.high = obj.getDouble("high");
+			data.low = obj.getDouble("low");
+			data.close = obj.getDouble("trade");
+			data.volume = obj.getDouble("volume");
+			data.price_change = obj.getDouble("pricechange");
+			data.p_change = obj.getDouble("changepercent");
+			data.turnover = obj.getDouble("turnoverratio");
+			result.add(data);
+		}
+		return count;
+	}
+
 	@Deprecated
 	public static QuoteData getRealtimeQuotes(String code) {
 		String symbolCode = _codeToSymbol(code);
@@ -432,4 +515,46 @@ public class Trading {
 		return data;
 	}
 
+	/**
+	 * 获取大盘指数行情 迁移自{@code def get_index()}方法。
+	 * 
+	 * @return
+	 */
+	public static List<TradeData> getIndex() {
+		List<TradeData> result = new ArrayList<>();
+
+		String url = String.format(Cons.URL.INDEX_HQ_URL.value, Cons.P_TYPE.http.value, Cons.DOMAINS.sinahq.value);
+		// http://hq.sinajs.cn/rn=xppzh&list=sh000001,sh000002,sh000003,sh000008,sh000009,sh000010,sh000011,sh000012,sh000016,sh000017,sh000300,sh000905,sz399001,sz399002,sz399003,sz399004,sz399005,sz399006,sz399008,sz399100,sz399101,sz399106,sz399107,sz399108,sz399333,sz399606
+		String content = HTTParty.get(url, "GBK");
+		content = content.replaceAll("var hq_str_sh", "").replaceAll("var hq_str_sz", "");
+		content = content.replaceAll("\";", "").replaceAll("\"", "");
+		content = content.replaceAll("=", ",");
+
+		// INDEX_HEADER =
+		// 'code,name,open,preclose,close,high,low,0,0,volume,amount,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,d,c,3\n'
+		BufferedReader reader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(content.getBytes())));
+		String line = null;
+		try {
+			while ((line = reader.readLine()) != null) {
+				TradeData data = new TradeData();
+				String item[] = line.split(",");
+				data.code = item[0];
+				data.open = Double.parseDouble(item[2]);
+				data.high = Double.parseDouble(item[5]);
+				data.low = Double.parseDouble(item[6]);
+				data.close = Double.parseDouble(item[4]);
+				data.volume = Double.parseDouble(item[9]);
+				data.price_change = Double.parseDouble(item[4]) - Double.parseDouble(item[3]);
+				data.p_change = (Double.parseDouble(item[4]) / Double.parseDouble(item[3]) - 1) * 100;
+				data.amount = Double.parseDouble(item[10]); // 单位元
+				result.add(data);
+			}
+		} catch (NumberFormatException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return result;
+
+	}
 }

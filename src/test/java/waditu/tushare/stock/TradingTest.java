@@ -18,7 +18,7 @@ import waditu.tushare.exception.IOError;
  */
 public class TradingTest {
 	private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-	
+
 	@Rule
 	public ExpectedException thrown = ExpectedException.none();
 
@@ -57,9 +57,9 @@ public class TradingTest {
 	}
 
 	@Test
-	public void testGetTickData_SN(){
-        thrown.expect(IOError.class);
-        thrown.expectMessage("服务已下线");
+	public void testGetTickData_SN() {
+		thrown.expect(IOError.class);
+		thrown.expectMessage("服务已下线");
 		Trading.getTickData("300118", "2020-02-21", 3, 100, "sn");
 	}
 
@@ -67,9 +67,9 @@ public class TradingTest {
 	/**
 	 * 该功能为实现
 	 */
-	public void testGetTickData_TT(){
-        thrown.expect(IOError.class);
-        thrown.expectMessage("获取失败，请检查网络");
+	public void testGetTickData_TT() {
+		thrown.expect(IOError.class);
+		thrown.expectMessage("获取失败，请检查网络");
 		Trading.getTickData("300118", "2020-02-21", 3, 100, "tt");
 	}
 
@@ -89,6 +89,19 @@ public class TradingTest {
 	public void testGetSinaDD() {
 		int count = Trading.getSinaDD("600118", "2020-03-25", 400, 3, 100).size();
 		assertTrue(count > 50);
+	}
+
+	@Test
+	public void testGetTodayAll() {
+		int count = Trading.getTodayAll(3000, true).size();
+		//System.out.print(count);
+		assertTrue(count >= 80);
+	}
+
+	@Test
+	public void testGetIndex() {
+		int count = Trading.getIndex().size();
+		assertTrue(count > 20);
 	}
 	
 	@Test

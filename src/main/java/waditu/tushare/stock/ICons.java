@@ -80,8 +80,8 @@ public interface ICons {
 		hs300b("000300cons.xls"), hs300w("000300closeweight.xls"), sz50b("000016cons.xls"), dp("all_fpya.php"),
 		dp163("fpyg.html"), emxsg("JS.aspx"), fh163("jjcgph.php"), newstock("vRPD_NewStockIssue.php"),
 		zz500b("000905cons.xls"), zz500wt("000905closeweight.xls"), t_ticks("vMS_tradedetail.php"), dw("downLoad.html"),
-		qmd("queryMargin.do"), szsefc("ShowReport.szse"), ssecq("commonQuery.do"), sinadd("json_v2.php/CN_Bill.GetBillList"),
-		ids_sw("SwHy.php"), idx("index.php"), index("index.html");
+		qmd("queryMargin.do"), szsefc("ShowReport.szse"), ssecq("commonQuery.do"),
+		sinadd("json_v2.php/CN_Bill.GetBillList"), ids_sw("SwHy.php"), idx("index.php"), index("index.html");
 
 		public final String value;
 
@@ -95,6 +95,8 @@ public interface ICons {
 		TICK_PRICE_URL_TT("%sstock.%s/data/%s?appn=detail&action=download&c=%s&d=%s"),
 		TICK_PRICE_URL_NT("%squotes.%s/cjmx/%s/%s/%s.xls"), DAY_PRICE_URL("%sapi.finance.%s/%s/?code=%s&type=last"),
 		DAY_PRICE_MIN_URL("%sapi.finance.%s/akmin?scode=%s&type=%s"),
+		SINA_DAY_PRICE_URL(
+				"%s%s/quotes_service/api/%s/Market_Center.getHQNodeData?num=80&sort=code&asc=0&node=%s&symbol=&_s_r_a=page&page=%s"),
 		REPORT_URL(
 				"%s%s/q/go.php/vFinanceAnalyze/kind/mainindex/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s"),
 		PROFIT_URL("%s%s/q/go.php/vFinanceAnalyze/kind/profit/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s"),
@@ -106,6 +108,8 @@ public interface ICons {
 		CASHFLOW_URL(
 				"%s%s/q/go.php/vFinanceAnalyze/kind/cashflow/%s?s_i=&s_a=&s_c=&reportdate=%s&quarter=%s&p=%s&num=%s"),
 		ALL_STOCK_BASICS_FILE(P_TYPE.http.value + DOMAINS.oss.value + "/tsdata/%sall%s.csv"),
+		INDEX_HQ_URL(
+				"%shq.%s/rn=xppzh&list=sh000001,sh000002,sh000003,sh000008,sh000009,sh000010,sh000011,sh000012,sh000016,sh000017,sh000300,sh000905,sz399001,sz399002,sz399003,sz399004,sz399005,sz399006,sz399008,sz399100,sz399101,sz399106,sz399107,sz399108,sz399333,sz399606"),
 		SINA_DD("%s%s/quotes_service/api/%s?symbol=%s&num=60&page=1&sort=ticktime&asc=0&volume=%s&amount=0&type=0&day=%s");
 
 		public final String value;
@@ -117,11 +121,10 @@ public interface ICons {
 
 	public final static String[] TICK_SRCS = { "sn", "tt", "nt" };
 
-	
 	public static enum SINA_DD_COLS {
 		symbol, name, ticktime, price, volume, prev_price, kind
-    }
-	
+	}
+
 	public static enum Msg {
 		NETWORK_URL_ERROR_MSG("获取失败，请检查网络"), DATE_CHK_MSG("年度输入错误：请输入1989年以后的年份数字，格式：YYYY"),
 		DATE_CHK_Q_MSG("季度输入错误：请输入1、2、3或4数字"), TICK_SRC_ERROR("数据源代码只能输入sn,tt,nt其中之一");
