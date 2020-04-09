@@ -69,6 +69,12 @@ public class Trading {
 	 */
 	public static List<TradeData> getHistData(String code, String start, String end, String ktype, int retryCount,
 			int pause) {
+		try {
+			Thread.sleep(pause);
+		} catch (InterruptedException e1) {
+			e1.printStackTrace();
+		}
+		
 		String symbolCode = Cons.codeToSymbol(code);
 		String url;
 
@@ -125,11 +131,6 @@ public class Trading {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
-				try {
-					Thread.sleep(pause);
-				} catch (InterruptedException e1) {
-					e1.printStackTrace();
-				}
 				continue;
 			}
 			return result;
